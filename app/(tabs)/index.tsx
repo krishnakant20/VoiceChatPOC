@@ -13,7 +13,9 @@ import {
 } from "react-native";
 
 export default function HomeScreen() {
-  const [messages, setMessages] = useState<string[]>([]);
+  const [messages, setMessages] = useState<
+    { text: string; sender: "user" | "assistant" }[]
+  >([]);
 
   useEffect(() => {
     (async () => {
@@ -29,9 +31,22 @@ export default function HomeScreen() {
   useSpeechRecognitionEvent("result", (event) => {
     const transcript = event.results[0]?.transcript;
 
-    if (transcript) {
-      setMessages((prev) => [...prev, transcript]);
-    }
+    if (!transcript) return;
+
+    setMessages((prev) => [
+      ...prev,
+      { text: transcript, sender: "user" },
+    ]);
+
+    setTimeout(() => {
+      setMessages((prev) => [
+        ...prev,
+        {
+          text: "I heard: " + transcript,
+          sender: "assistant",
+        },
+      ]);
+    }, 700);
   });
 
   const startListening = async () => {
@@ -53,8 +68,23 @@ export default function HomeScreen() {
         keyExtractor={(_, index) => index.toString()}
         contentContainerStyle={{ padding: 16 }}
         renderItem={({ item }) => (
-          <View style={styles.userBubble}>
-            <Text style={styles.userText}>{item}</Text>
+          <View
+            style={[
+              styles.bubble,
+              item.sender === "user"
+                ? styles.userBubble
+                : styles.assistantBubble,
+            ]}
+          >
+            <Text
+              style={
+                item.sender === "user"
+                  ? styles.userText
+                  : styles.assistantText
+              }
+            >
+              {item.text}
+            </Text>
           </View>
         )}
       />
@@ -84,11 +114,23 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   micButton: {
-    backgroundColor: "#222",
-    padding: 16,
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    backgroundColor: "#111827",
+    justifyContent: "center",
     alignItems: "center",
-    margin: 16,
-    borderRadius: 30,
+    alignSelf: "center",
+    marginBottom: 25,
+
+    elevation: 5, // Android
+    shadowColor: "#000",
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
   },
   micText: {
     color: "#fff",
@@ -106,5 +148,21 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 22,
     fontWeight: "bold",
+  },
+  bubble: {
+    padding: 12,
+    borderRadius: 12,
+    marginBottom: 10,
+    maxWidth: "80%",
+  },
+
+  assistantBubble: {
+    alignSelf: "flex-start",
+    backgroundColor: "#ECECEC",
+  },
+
+  assistantText: {
+    color: "#000",
+    fontSize: 16,
   },
 });
