@@ -2,7 +2,7 @@ import {
   ExpoSpeechRecognitionModule,
   useSpeechRecognitionEvent,
 } from "expo-speech-recognition";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Alert,
   FlatList,
@@ -16,6 +16,8 @@ export default function HomeScreen() {
   const [messages, setMessages] = useState<
     { text: string; sender: "user" | "assistant" }[]
   >([]);
+  const [isListening, setIsListening] = useState(false);
+  const flatListRef = useRef<FlatList>(null);
 
   useEffect(() => {
     (async () => {
@@ -48,8 +50,13 @@ export default function HomeScreen() {
       ]);
     }, 700);
   });
+  useSpeechRecognitionEvent("end", () => {
+    setIsListening(false);
+  });
 
   const startListening = async () => {
+    setIsListening(true);
+
     await ExpoSpeechRecognitionModule.start({
       lang: "en-US",
       interimResults: false,
@@ -64,9 +71,13 @@ export default function HomeScreen() {
       </View>
 
       <FlatList
+        ref={flatListRef}
         data={messages}
         keyExtractor={(_, index) => index.toString()}
         contentContainerStyle={{ padding: 16 }}
+        onContentSizeChange={() =>
+          flatListRef.current?.scrollToEnd({ animated: true })
+        }
         renderItem={({ item }) => (
           <View
             style={[
@@ -89,8 +100,15 @@ export default function HomeScreen() {
         )}
       />
 
-      <TouchableOpacity style={styles.micButton} onPress={startListening}>
-        <Text style={styles.micText}>🎤</Text>
+      <TouchableOpacity
+        style={[
+          styles.micButton,
+          { backgroundColor: isListening ? "#EF4444" : "#111827" },
+        ]}
+        onPress={startListening}>
+        <Text style={styles.micText}>
+          {isListening ? "🎙️" : "🎤"}
+        </Text>
       </TouchableOpacity>
     </View>
   );
