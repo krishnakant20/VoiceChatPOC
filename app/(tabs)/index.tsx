@@ -2,10 +2,19 @@ import {
   ExpoSpeechRecognitionModule,
   useSpeechRecognitionEvent,
 } from "expo-speech-recognition";
-import { useEffect } from "react";
-import { Alert, Button, StyleSheet, Text, View } from "react-native";
+import { useEffect, useState } from "react";
+import {
+  Alert,
+  FlatList,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 export default function HomeScreen() {
+  const [messages, setMessages] = useState<string[]>([]);
+
   useEffect(() => {
     (async () => {
       const result =
@@ -18,22 +27,41 @@ export default function HomeScreen() {
   }, []);
 
   useSpeechRecognitionEvent("result", (event) => {
-    console.log("Recognized:", event.results[0]?.transcript);
+    const transcript = event.results[0]?.transcript;
+
+    if (transcript) {
+      setMessages((prev) => [...prev, transcript]);
+    }
   });
 
   const startListening = async () => {
     await ExpoSpeechRecognitionModule.start({
       lang: "en-US",
-      interimResults: true,
+      interimResults: false,
       continuous: false,
     });
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Voice Chat POC</Text>
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Voice Chat</Text>
+      </View>
 
-      <Button title="Start Listening" onPress={startListening} />
+      <FlatList
+        data={messages}
+        keyExtractor={(_, index) => index.toString()}
+        contentContainerStyle={{ padding: 16 }}
+        renderItem={({ item }) => (
+          <View style={styles.userBubble}>
+            <Text style={styles.userText}>{item}</Text>
+          </View>
+        )}
+      />
+
+      <TouchableOpacity style={styles.micButton} onPress={startListening}>
+        <Text style={styles.micText}>🎤</Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -41,12 +69,42 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: "#fff",
+  },
+  userBubble: {
+    alignSelf: "flex-end",
+    backgroundColor: "#007AFF",
+    padding: 12,
+    borderRadius: 12,
+    marginBottom: 10,
+    maxWidth: "80%",
+  },
+  userText: {
+    color: "#fff",
+    fontSize: 16,
+  },
+  micButton: {
+    backgroundColor: "#222",
+    padding: 16,
+    alignItems: "center",
+    margin: 16,
+    borderRadius: 30,
+  },
+  micText: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "600",
+  },
+  header: {
+    height: 70,
     justifyContent: "center",
     alignItems: "center",
+    borderBottomWidth: 1,
+    borderBottomColor: "#ddd",
   },
-  title: {
-    fontSize: 24,
-    marginBottom: 20,
+
+  headerTitle: {
+    fontSize: 22,
     fontWeight: "bold",
   },
 });
