@@ -144,8 +144,52 @@ export default function HomeScreen() {
             >
               {item.text}
             </Text>
+
+            {item.sender === "assistant" && (
+              <View style={styles.actionRow}>
+                <TouchableOpacity>
+                  <Ionicons
+                    name="copy-outline"
+                    size={18}
+                    color="#666"
+                  />
+                </TouchableOpacity>
+
+                <TouchableOpacity>
+                  <Feather
+                    name="thumbs-up"
+                    size={18}
+                    color="#666"
+                  />
+                </TouchableOpacity>
+
+                <TouchableOpacity>
+                  <Feather
+                    name="thumbs-down"
+                    size={18}
+                    color="#666"
+                  />
+                </TouchableOpacity>
+
+                <TouchableOpacity>
+                  <Ionicons
+                    name="volume-medium-outline"
+                    size={20}
+                    color="#666"
+                  />
+                </TouchableOpacity>
+
+                <TouchableOpacity>
+                  <Ionicons name="share" size={20} color="#666" />
+                </TouchableOpacity>
+                <TouchableOpacity>
+                  <Ionicons name="ellipsis-horizontal" size={20} color="#666" />
+                </TouchableOpacity>
+              </View>
+            )}
           </View>
         )}
+
       />
 
       <TouchableOpacity
@@ -342,5 +386,11 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginLeft: 14,
+  },
+  actionRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 10,
+    gap: 18,
   },
 });
