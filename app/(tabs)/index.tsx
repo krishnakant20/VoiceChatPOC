@@ -148,18 +148,10 @@ export default function HomeScreen() {
         )}
       />
 
-      {/* <TouchableOpacity
-        style={[
-          styles.micButton,
-          { backgroundColor: isListening ? "#EF4444" : "#111827" },
-        ]}
-        onPress={startListening}>
-        <Text style={styles.micText}>
-          {isListening ? "🎙️" : "🎤"}
-        </Text>
-      </TouchableOpacity> */}
-      <View style={styles.voiceOrb}>
-        <View style={styles.voiceGradient} />
+      <TouchableOpacity
+        activeOpacity={0.9}
+        onPress={startListening}
+      >
         <Animated.View style={[styles.voiceOrb, orbStyle]}>
           <LinearGradient
             colors={[
@@ -173,7 +165,7 @@ export default function HomeScreen() {
             style={styles.voiceGradient}
           />
         </Animated.View>
-      </View>
+      </TouchableOpacity>
       <View style={styles.bottomContainer}>
         <View style={styles.inputBox}>
           <TouchableOpacity>
@@ -287,7 +279,7 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     // marginBottom: 32,
     position: "absolute",
-    bottom: 64,
+    bottom: 32,
 
     // shadowColor: "#2F80ED",
     // shadowOpacity: 0.35,
