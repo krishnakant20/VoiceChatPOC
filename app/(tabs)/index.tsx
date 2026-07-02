@@ -180,7 +180,7 @@ export default function HomeScreen() {
                 </TouchableOpacity>
 
                 <TouchableOpacity>
-                  <Ionicons name="share" size={20} color="#666" />
+                  <Ionicons name="share-social-outline" size={20} color="#666" />
                 </TouchableOpacity>
                 <TouchableOpacity>
                   <Ionicons name="ellipsis-horizontal" size={20} color="#666" />
