@@ -26,12 +26,19 @@ import Animated, {
 } from "react-native-reanimated";
 
 export default function HomeScreen() {
+  // STATE MANAGEMENT
+  // messages: Stores the chat conversation history with sender (user or assistant) and text content
   const [messages, setMessages] = useState<
     { text: string; sender: "user" | "assistant" }[]
   >([]);
+  // isListening: Tracks whether speech recognition is currently active
   const [isListening, setIsListening] = useState(false);
+  // flatListRef: Reference to the FlatList component to control scrolling programmatically
   const flatListRef = useRef<FlatList>(null);
 
+  // PERMISSION REQUEST
+  // Runs once when component mounts to request microphone permission
+  // Required for speech recognition to work on mobile devices
   useEffect(() => {
     (async () => {
       const result =
@@ -43,6 +50,9 @@ export default function HomeScreen() {
     })();
   }, []);
 
+  // SPEECH RECOGNITION EVENT HANDLERS
+  // "result" event: Triggered when speech recognition returns transcribed text
+  // Adds user message to chat, then simulates assistant response after 700ms delay
   useSpeechRecognitionEvent("result", (event) => {
     const transcript = event.results[0]?.transcript;
 
@@ -63,40 +73,52 @@ export default function HomeScreen() {
       ]);
     }, 700);
   });
+
+  // "end" event: Triggered when speech recognition stops listening
+  // Updates isListening state to false
   useSpeechRecognitionEvent("end", () => {
     setIsListening(false);
   });
 
+  // START LISTENING FUNCTION
+  // Initiates speech recognition with English language
+  // Sets isListening to true and configures recognition settings
   const startListening = async () => {
     setIsListening(true);
 
     await ExpoSpeechRecognitionModule.start({
-      lang: "en-US",
-      interimResults: false,
-      continuous: false,
+      lang: "en-US", // Language for speech recognition
+      interimResults: false, // Don't show partial results
+      continuous: false, // Stop after one utterance
     });
   };
 
-  // orb
+  // VOICE ORB ANIMATION
+  // Creates a pulsing animation effect for the voice orb
+  // scale: Shared value that controls the orb's size (starts at 1)
   const scale = useSharedValue(1);
 
+  // Animation sequence: Scale up to 1.08, then down to 0.94, repeat infinitely
   useEffect(() => {
     scale.value = withRepeat(
       withSequence(
-        withTiming(1.08, { duration: 1200 }),
-        withTiming(0.94, { duration: 1200 })
+        withTiming(1.08, { duration: 1200 }), // Scale up over 1.2s
+        withTiming(0.94, { duration: 1200 }) // Scale down over 1.2s
       ),
-      -1,
-      true
+      -1, // Repeat infinitely
+      true // Reverse animation on each repeat
     );
   }, []);
 
+  // Converts the shared value into an animated style for the orb
   const orbStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
   }));
 
   return (
     <View style={styles.container}>
+      {/* HEADER SECTION */}
+      {/* Top navigation bar with menu button, app title, and options button */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.circleBtn}>
           <Feather name="menu" size={34} color="#111" />
@@ -118,6 +140,9 @@ export default function HomeScreen() {
         </TouchableOpacity>
       </View>
 
+      {/* CHAT MESSAGE LIST */}
+      {/* Displays all messages in the conversation */}
+      {/* Auto-scrolls to bottom when new messages are added */}
       <FlatList
         ref={flatListRef}
         data={messages}
@@ -145,6 +170,8 @@ export default function HomeScreen() {
               {item.text}
             </Text>
 
+            {/* ACTION BUTTONS FOR ASSISTANT MESSAGES */}
+            {/* Only shown for assistant messages: copy, thumbs up/down, volume, share, more options */}
             {item.sender === "assistant" && (
               <View style={styles.actionRow}>
                 <TouchableOpacity>
@@ -192,6 +219,9 @@ export default function HomeScreen() {
 
       />
 
+      {/* VOICE ORB BUTTON */}
+      {/* Animated circular button with gradient that triggers speech recognition when pressed */}
+      {/* Positioned absolutely at bottom center with pulsing animation */}
       <TouchableOpacity
         activeOpacity={0.9}
         onPress={startListening}
@@ -210,6 +240,9 @@ export default function HomeScreen() {
           />
         </Animated.View>
       </TouchableOpacity>
+
+      {/* BOTTOM INPUT CONTAINER */}
+      {/* Contains text input box, microphone button, and close button */}
       <View style={styles.bottomContainer}>
         <View style={styles.inputBox}>
           <TouchableOpacity>
@@ -219,6 +252,7 @@ export default function HomeScreen() {
           <Text style={styles.placeholder}>Type</Text>
         </View>
 
+        {/* Microphone button for alternative voice input (currently commented out) */}
         <TouchableOpacity
           style={styles.voiceButton}
         // onPress={startListening}
@@ -230,6 +264,7 @@ export default function HomeScreen() {
           />
         </TouchableOpacity>
 
+        {/* Close button to dismiss or clear input */}
         <TouchableOpacity style={styles.closeButton}>
           <Ionicons
             name="close"
@@ -241,11 +276,16 @@ export default function HomeScreen() {
   );
 }
 
+// STYLESHEET
+// Contains all styling definitions for the UI components
 const styles = StyleSheet.create({
+  // Main container: Full screen with white background
   container: {
     flex: 1,
     backgroundColor: "#fff",
   },
+
+  // User message bubble: Aligned right, light gray background
   userBubble: {
     alignSelf: "flex-end",
     backgroundColor: "#F3F3F3", // ChatGPT light green
@@ -255,10 +295,14 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     maxWidth: "82%",
   },
+
+  // User message text color and size
   userText: {
     color: "#111",
     fontSize: 16,
   },
+
+  // Microphone button style (unused in current implementation)
   micButton: {
     width: 70,
     height: 70,
@@ -269,7 +313,7 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     marginBottom: 25,
 
-    elevation: 5, // Android
+    elevation: 5, // Android shadow
     shadowColor: "#000",
     shadowOpacity: 0.25,
     shadowRadius: 6,
@@ -278,11 +322,15 @@ const styles = StyleSheet.create({
       height: 3,
     },
   },
+
+  // Microphone button text style
   micText: {
     color: "#fff",
     fontSize: 18,
     fontWeight: "600",
   },
+
+  // Base bubble style (overridden by userBubble/assistantBubble)
   bubble: {
     padding: 12,
     borderRadius: 12,
@@ -290,6 +338,7 @@ const styles = StyleSheet.create({
     maxWidth: "80%",
   },
 
+  // Assistant message bubble: Aligned left, white background
   assistantBubble: {
     alignSelf: "flex-start",
     backgroundColor: "#FFFFFF",
@@ -300,10 +349,13 @@ const styles = StyleSheet.create({
     maxWidth: "82%",
   },
 
+  // Assistant message text color and size
   assistantText: {
     color: "#111",
     fontSize: 16,
   },
+
+  // Header container: Top bar with menu and options buttons
   header: {
     marginTop: 55,
     marginHorizontal: 18,
@@ -311,12 +363,16 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
   },
+
+  // Header title: App name styling
   headerTitle: {
     flex: 1,
     marginLeft: 18,
     fontSize: 23,
     fontWeight: "600",
   },
+
+  // Circular button style for menu and options
   circleBtn: {
     width: 64,
     height: 64,
@@ -325,6 +381,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
+
+  // Voice orb: Animated circular button positioned at bottom center
   voiceOrb: {
     alignSelf: "center",
     // marginBottom: 32,
@@ -339,6 +397,8 @@ const styles = StyleSheet.create({
     //   height: 12,
     // },
   },
+
+  // Voice orb gradient container
   voiceGradient: {
     width: 118,
     height: 118,
@@ -346,6 +406,7 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
 
+  // Bottom container: Holds input box and action buttons
   bottomContainer: {
     flexDirection: "row",
     alignItems: "center",
@@ -353,6 +414,7 @@ const styles = StyleSheet.create({
     marginBottom: 28,
   },
 
+  // Input box: Text input area with plus button
   inputBox: {
     flex: 1,
     height: 72,
@@ -363,12 +425,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 22,
   },
 
+  // Placeholder text styling
   placeholder: {
     color: "#888",
     fontSize: 20,
     marginLeft: 16,
   },
 
+  // Voice button: Alternative microphone input button
   voiceButton: {
     width: 72,
     height: 72,
@@ -378,6 +442,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginLeft: 14,
   },
+
+  // Close button: Black circular button to dismiss input
   closeButton: {
     width: 72,
     height: 72,
@@ -387,6 +453,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginLeft: 14,
   },
+
+  // Action row: Horizontal layout for assistant message action buttons
   actionRow: {
     flexDirection: "row",
     alignItems: "center",
