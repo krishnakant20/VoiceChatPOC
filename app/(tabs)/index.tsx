@@ -177,7 +177,7 @@ export default function HomeScreen() {
 
         <TouchableOpacity
           style={styles.voiceButton}
-          onPress={startListening}
+        // onPress={startListening}
         >
           <MaterialCommunityIcons
             name="microphone-outline"
@@ -204,14 +204,15 @@ const styles = StyleSheet.create({
   },
   userBubble: {
     alignSelf: "flex-end",
-    backgroundColor: "#007AFF",
+    backgroundColor: "#F3F3F3", // ChatGPT light green
     padding: 12,
-    borderRadius: 12,
+    borderRadius: 22,
+    borderBottomRightRadius: 6,
     marginBottom: 10,
-    maxWidth: "80%",
+    maxWidth: "82%",
   },
   userText: {
-    color: "#fff",
+    color: "#111",
     fontSize: 16,
   },
   micButton: {
@@ -247,11 +248,16 @@ const styles = StyleSheet.create({
 
   assistantBubble: {
     alignSelf: "flex-start",
-    backgroundColor: "#ECECEC",
+    backgroundColor: "#FFFFFF",
+    padding: 12,
+    borderRadius: 22,
+    borderBottomLeftRadius: 6,
+    marginBottom: 10,
+    maxWidth: "82%",
   },
 
   assistantText: {
-    color: "#000",
+    color: "#111",
     fontSize: 16,
   },
   header: {
